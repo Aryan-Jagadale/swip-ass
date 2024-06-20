@@ -9,11 +9,12 @@ import InvoiceItem from "./InvoiceItem";
 import InvoiceModal from "./InvoiceModal";
 import { BiArrowBack } from "react-icons/bi";
 import InputGroup from "react-bootstrap/InputGroup";
-import { useDispatch } from "react-redux";
-import { addInvoice, updateInvoice } from "../redux/invoicesSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { addInvoice, addItemToForm, updateInvoice } from "../redux/invoicesSlice";
 import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
 import generateRandomId from "../utils/generateRandomId";
 import { useInvoiceListData } from "../redux/hooks";
+import ProductsTab from "./ProductsTab";
 
 const InvoiceForm = () => {
   const dispatch = useDispatch();
@@ -22,49 +23,66 @@ const InvoiceForm = () => {
   const navigate = useNavigate();
   const isCopy = location.pathname.includes("create");
   const isEdit = location.pathname.includes("edit");
-
   const [isOpen, setIsOpen] = useState(false);
   const [copyId, setCopyId] = useState("");
   const { getOneInvoice, listSize } = useInvoiceListData();
   const [formData, setFormData] = useState(
-    isEdit
-      ? getOneInvoice(params.id)
-      : isCopy && params.id
-      ? {
-          ...getOneInvoice(params.id),
-          id: generateRandomId(),
-          invoiceNumber: listSize + 1,
-        }
-      : {
-          id: generateRandomId(),
-          currentDate: new Date().toLocaleDateString(),
-          invoiceNumber: listSize + 1,
-          dateOfIssue: "",
-          billTo: "",
-          billToEmail: "",
-          billToAddress: "",
-          billFrom: "",
-          billFromEmail: "",
-          billFromAddress: "",
-          notes: "",
-          total: "0.00",
-          subTotal: "0.00",
-          taxRate: "",
-          taxAmount: "0.00",
-          discountRate: "",
-          discountAmount: "0.00",
-          currency: "$",
-          items: [
-            {
-              itemId: 0,
-              itemName: "",
-              itemDescription: "",
-              itemPrice: "1.00",
-              itemQuantity: 1,
-            },
-          ],
-        }
-  );
+  isEdit
+    ? getOneInvoice(params.id)
+    : isCopy && params.id
+    ? {
+        ...getOneInvoice(params.id),
+        id: generateRandomId(),
+        invoiceNumber: listSize + 1,
+      }
+    : {
+        id: generateRandomId(),
+        currentDate: new Date().toLocaleDateString(),
+        invoiceNumber: listSize + 1,
+        dateOfIssue: "",
+        billTo: "",
+        billToEmail: "",
+        billToAddress: "",
+        billFrom: "",
+        billFromEmail: "",
+        billFromAddress: "",
+        notes: "",
+        total: "0.00",
+        subTotal: "0.00",
+        taxRate: "",
+        taxAmount: "0.00",
+        discountRate: "",
+        discountAmount: "0.00",
+        currency: "$",
+        items: [
+          {
+            itemId: 0,
+            itemName: "",
+            itemDescription: "",
+            itemPrice: "1.00",
+            itemQuantity: 1,
+          },
+        ],
+      }
+);
+
+/* const itemsfromProdTab = useSelector(addItemToForm);
+useEffect(() => {
+  setFormData(prevFormData => ({
+    ...prevFormData,
+    items: [
+      ...prevFormData.items,
+      ...itemsfromProdTab.payload.invoices.map(item => ({
+        itemId: item.itemId,
+        itemName: item.itemName,
+        itemDescription: item.itemDescription,
+        itemPrice: item.itemPrice,
+        itemQuantity: item.itemQuantity,
+      }))
+    ]
+  }));
+}, [itemsfromProdTab]); */
+
 
   useEffect(() => {
     handleCalculateTotal();
@@ -158,14 +176,16 @@ const InvoiceForm = () => {
 
   const handleAddInvoice = () => {
     if (isEdit) {
+      
       dispatch(updateInvoice({ id: params.id, updatedInvoice: formData }));
+      console.log("updateInvoice is called with:", { id: params.id, updatedInvoice: formData });
       alert("Invoice updated successfuly 🥳");
     } else if (isCopy) {
       dispatch(addInvoice({ id: generateRandomId(), ...formData }));
       alert("Invoice added successfuly 🥳");
     } else {
       dispatch(addInvoice(formData));
-      alert("Invoice added successfuly 🥳");
+      alert("Invoice added successfuly 🥳"); 
     }
     navigate("/");
   };
@@ -477,6 +497,7 @@ const InvoiceForm = () => {
             >
               Copy Old Invoice
             </Button>
+            <ProductsTab/>
           </div>
         </Col>
       </Row>
