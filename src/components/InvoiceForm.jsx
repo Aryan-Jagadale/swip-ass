@@ -10,11 +10,17 @@ import InvoiceModal from "./InvoiceModal";
 import { BiArrowBack } from "react-icons/bi";
 import InputGroup from "react-bootstrap/InputGroup";
 import { useDispatch, useSelector } from "react-redux";
-import { addInvoice, addItemToForm, updateInvoice } from "../redux/invoicesSlice";
+import { addInvoice, updateInvoice } from "../redux/invoicesSlice";
 import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
 import generateRandomId from "../utils/generateRandomId";
 import { useInvoiceListData } from "../redux/hooks";
 import ProductsTab from "./ProductsTab";
+import {
+  fetchRates,
+  selectRates,
+  selectSelectedCurrency,
+  setCurrency,
+} from "../redux/currencySlice";
 
 const InvoiceForm = () => {
   const dispatch = useDispatch();
@@ -26,63 +32,47 @@ const InvoiceForm = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [copyId, setCopyId] = useState("");
   const { getOneInvoice, listSize } = useInvoiceListData();
+  const [oldCurrency, setOldCurrency] = useState("");
+  const [newCurrency, setNewCurrency] = useState("");
   const [formData, setFormData] = useState(
-  isEdit
-    ? getOneInvoice(params.id)
-    : isCopy && params.id
-    ? {
-        ...getOneInvoice(params.id),
-        id: generateRandomId(),
-        invoiceNumber: listSize + 1,
-      }
-    : {
-        id: generateRandomId(),
-        currentDate: new Date().toLocaleDateString(),
-        invoiceNumber: listSize + 1,
-        dateOfIssue: "",
-        billTo: "",
-        billToEmail: "",
-        billToAddress: "",
-        billFrom: "",
-        billFromEmail: "",
-        billFromAddress: "",
-        notes: "",
-        total: "0.00",
-        subTotal: "0.00",
-        taxRate: "",
-        taxAmount: "0.00",
-        discountRate: "",
-        discountAmount: "0.00",
-        currency: "$",
-        items: [
-          {
-            itemId: 0,
-            itemName: "",
-            itemDescription: "",
-            itemPrice: "1.00",
-            itemQuantity: 1,
-          },
-        ],
-      }
-);
-
-/* const itemsfromProdTab = useSelector(addItemToForm);
-useEffect(() => {
-  setFormData(prevFormData => ({
-    ...prevFormData,
-    items: [
-      ...prevFormData.items,
-      ...itemsfromProdTab.payload.invoices.map(item => ({
-        itemId: item.itemId,
-        itemName: item.itemName,
-        itemDescription: item.itemDescription,
-        itemPrice: item.itemPrice,
-        itemQuantity: item.itemQuantity,
-      }))
-    ]
-  }));
-}, [itemsfromProdTab]); */
-
+    isEdit
+      ? getOneInvoice(params.id)
+      : isCopy && params.id
+      ? {
+          ...getOneInvoice(params.id),
+          id: generateRandomId(),
+          invoiceNumber: listSize + 1,
+        }
+      : {
+          id: generateRandomId(),
+          currentDate: new Date().toLocaleDateString(),
+          invoiceNumber: listSize + 1,
+          dateOfIssue: "",
+          billTo: "",
+          billToEmail: "",
+          billToAddress: "",
+          billFrom: "",
+          billFromEmail: "",
+          billFromAddress: "",
+          notes: "",
+          total: "0.00",
+          subTotal: "0.00",
+          taxRate: "",
+          taxAmount: "0.00",
+          discountRate: "",
+          discountAmount: "0.00",
+          currency: "$",
+          items: [
+            {
+              itemId: 0,
+              itemName: "",
+              itemDescription: "",
+              itemPrice: "1.00",
+              itemQuantity: 1,
+            },
+          ],
+        }
+  );
 
   useEffect(() => {
     handleCalculateTotal();
@@ -160,8 +150,28 @@ useEffect(() => {
     handleCalculateTotal();
   };
 
+  const rates = useSelector(selectRates);
+
+  useEffect(() => {
+    dispatch(fetchRates());
+  }, [dispatch]);
+
   const onCurrencyChange = (selectedOption) => {
+    const oldCurr = formData.currency;
+    setOldCurrency(oldCurr);
+
     setFormData({ ...formData, currency: selectedOption.currency });
+    dispatch(setCurrency(selectedOption.currency));
+    const newCurr = selectedOption.currency;
+    setNewCurrency(newCurr);
+  };
+
+  const convertCurrency = (amount, fromCurrency, toCurrency) => {
+    if (fromCurrency === toCurrency) {
+      return amount;
+    }
+    const rate = rates[toCurrency] / rates[fromCurrency];
+    return (amount * rate).toFixed(2);
   };
 
   const openModal = (event) => {
@@ -176,16 +186,14 @@ useEffect(() => {
 
   const handleAddInvoice = () => {
     if (isEdit) {
-      
       dispatch(updateInvoice({ id: params.id, updatedInvoice: formData }));
-      console.log("updateInvoice is called with:", { id: params.id, updatedInvoice: formData });
       alert("Invoice updated successfuly 🥳");
     } else if (isCopy) {
       dispatch(addInvoice({ id: generateRandomId(), ...formData }));
       alert("Invoice added successfuly 🥳");
     } else {
       dispatch(addInvoice(formData));
-      alert("Invoice added successfuly 🥳"); 
+      alert("Invoice added successfuly 🥳");
     }
     navigate("/");
   };
@@ -205,13 +213,23 @@ useEffect(() => {
 
   return (
     <Form onSubmit={openModal}>
-      <div className="d-flex align-items-center">
-        <BiArrowBack size={18} />
-        <div className="fw-bold mt-1 mx-2 cursor-pointer">
-          <Link to="/">
-            <h5>Go Back</h5>
-          </Link>
-        </div>
+      <div className="d-flex align-items-center" style={{
+        margin:"18px 0px"
+      }}>
+        <Link
+          to="/"
+          style={{
+            textDecoration: "none",
+          }}
+        >
+          <Button
+            variant="outline-primary"
+            className="d-flex align-items-center"
+          >
+            <BiArrowBack size={18} className="me-2" />
+            Go back
+          </Button>
+        </Link>
       </div>
 
       <Row>
@@ -222,14 +240,14 @@ useEffect(() => {
                 <div className="d-flex flex-column">
                   <div className="mb-2">
                     <span className="fw-bold">Current&nbsp;Date:&nbsp;</span>
-                    <span className="current-date">{formData.currentDate}</span>
+                    <span className="current-date">{formData?.currentDate}</span>
                   </div>
                 </div>
                 <div className="d-flex flex-row align-items-center">
                   <span className="fw-bold d-block me-2">Due&nbsp;Date:</span>
                   <Form.Control
                     type="date"
-                    value={formData.dateOfIssue}
+                    value={formData?.dateOfIssue}
                     name="dateOfIssue"
                     onChange={(e) => editField(e.target.name, e.target.value)}
                     style={{ maxWidth: "150px" }}
@@ -241,7 +259,7 @@ useEffect(() => {
                 <span className="fw-bold me-2">Invoice&nbsp;Number:&nbsp;</span>
                 <Form.Control
                   type="number"
-                  value={formData.invoiceNumber}
+                  value={formData?.invoiceNumber}
                   name="invoiceNumber"
                   onChange={(e) => editField(e.target.name, e.target.value)}
                   min="1"
@@ -252,12 +270,12 @@ useEffect(() => {
             </div>
             <hr className="my-4" />
             <Row className="mb-5">
-              <Col>
+              <Col xs={12} md={6} className="mb-3 mb-md-0">
                 <Form.Label className="fw-bold">Bill to:</Form.Label>
                 <Form.Control
                   placeholder="Who is this invoice to?"
                   rows={3}
-                  value={formData.billTo}
+                  value={formData?.billTo}
                   type="text"
                   name="billTo"
                   className="my-2"
@@ -267,7 +285,7 @@ useEffect(() => {
                 />
                 <Form.Control
                   placeholder="Email address"
-                  value={formData.billToEmail}
+                  value={formData?.billToEmail}
                   type="email"
                   name="billToEmail"
                   className="my-2"
@@ -277,7 +295,7 @@ useEffect(() => {
                 />
                 <Form.Control
                   placeholder="Billing address"
-                  value={formData.billToAddress}
+                  value={formData?.billToAddress}
                   type="text"
                   name="billToAddress"
                   className="my-2"
@@ -286,12 +304,12 @@ useEffect(() => {
                   required
                 />
               </Col>
-              <Col>
+              <Col xs={12} md={6}>
                 <Form.Label className="fw-bold">Bill from:</Form.Label>
                 <Form.Control
                   placeholder="Who is this invoice from?"
                   rows={3}
-                  value={formData.billFrom}
+                  value={formData?.billFrom}
                   type="text"
                   name="billFrom"
                   className="my-2"
@@ -301,7 +319,7 @@ useEffect(() => {
                 />
                 <Form.Control
                   placeholder="Email address"
-                  value={formData.billFromEmail}
+                  value={formData?.billFromEmail}
                   type="email"
                   name="billFromEmail"
                   className="my-2"
@@ -311,7 +329,7 @@ useEffect(() => {
                 />
                 <Form.Control
                   placeholder="Billing address"
-                  value={formData.billFromAddress}
+                  value={formData?.billFromAddress}
                   type="text"
                   name="billFromAddress"
                   className="my-2"
@@ -433,14 +451,14 @@ useEffect(() => {
                 className="btn btn-light my-1"
                 aria-label="Change Currency"
               >
-                <option value="$">USD (United States Dollar)</option>
-                <option value="£">GBP (British Pound Sterling)</option>
-                <option value="¥">JPY (Japanese Yen)</option>
-                <option value="$">CAD (Canadian Dollar)</option>
-                <option value="$">AUD (Australian Dollar)</option>
-                <option value="$">SGD (Singapore Dollar)</option>
-                <option value="¥">CNY (Chinese Renminbi)</option>
-                <option value="₿">BTC (Bitcoin)</option>
+                <option value="USD">USD (United States Dollar)</option>
+                <option value="GBP">GBP (British Pound Sterling)</option>
+                <option value="JPY">JPY (Japanese Yen)</option>
+                <option value="CAD">CAD (Canadian Dollar)</option>
+                <option value="AUD">AUD (Australian Dollar)</option>
+                <option value="SGD">SGD (Singapore Dollar)</option>
+                <option value="CNY">CNY (Chinese Renminbi)</option>
+                <option value="BTC">BTC (Bitcoin)</option>
               </Form.Select>
             </Form.Group>
             <Form.Group className="my-3">

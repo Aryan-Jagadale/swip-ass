@@ -55,7 +55,9 @@ const InvoiceList = () => {
                     placeholder="Enter Invoice ID to copy"
                     className="bg-white border"
                     style={{
-                      height: "50px",
+                      height: "41px",
+                      borderRadius: "0.5rem",
+                      padding:"10px"
                     }}
                   />
                 </div>
@@ -68,6 +70,8 @@ const InvoiceList = () => {
                     <th>Due Date</th>
                     <th>Total Amt.</th>
                     <th>Actions</th>
+                    <th></th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -110,11 +114,40 @@ const InvoiceRow = ({ invoice, navigate }) => {
   };
 
   return (
-    <tr>
-      <td>{invoice.invoiceNumber}</td>
-      <td className="fw-normal">{invoice.billTo}</td>
-      <td className="fw-normal">{invoice.dateOfIssue}</td>
-      <td className="fw-normal">
+    <tr className="text-center">
+      <td
+        style={{
+          textAlign: "left",
+          padding: "10px",
+        }}
+      >
+        {invoice.invoiceNumber}
+      </td>
+      <td
+        style={{
+          textAlign: "left",
+          padding: "10px",
+        }}
+        className="fw-normal"
+      >
+        {invoice.billTo || "---"}
+      </td>
+      <td
+        style={{
+          textAlign: "left",
+          padding: "10px",
+        }}
+        className="fw-normal"
+      >
+        {invoice.dateOfIssue || "---"}
+      </td>
+      <td
+        style={{
+          textAlign: "left",
+          padding: "10px",
+        }}
+        className="fw-normal"
+      >
         {invoice.currency}
         {invoice.total}
       </td>
