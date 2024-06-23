@@ -6,7 +6,7 @@ import InvoiceModal from "../components/InvoiceModal";
 import { useNavigate } from "react-router-dom";
 import { useInvoiceListData } from "../redux/hooks";
 import { useDispatch } from "react-redux";
-import { addItemToForm, deleteItem } from "../redux/invoicesSlice";
+import {  deleteItem } from "../redux/invoicesSlice";
 import TooltipHeader from "../commonComponents/TooltipHeader";
 
 

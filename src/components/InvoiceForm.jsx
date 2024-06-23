@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Row from "react-bootstrap/Row";
@@ -9,7 +10,7 @@ import InvoiceItem from "./InvoiceItem";
 import InvoiceModal from "./InvoiceModal";
 import { BiArrowBack } from "react-icons/bi";
 import InputGroup from "react-bootstrap/InputGroup";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { addInvoice, updateInvoice } from "../redux/invoicesSlice";
 import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
 import generateRandomId from "../utils/generateRandomId";
@@ -17,8 +18,6 @@ import { useInvoiceListData } from "../redux/hooks";
 import ProductsTab from "./ProductsTab";
 import {
   fetchRates,
-  selectRates,
-  selectSelectedCurrency,
   setCurrency,
 } from "../redux/currencySlice";
 import { isInvoiceValid } from "../utils/checkIsDataThere";
@@ -153,7 +152,6 @@ const InvoiceForm = () => {
     handleCalculateTotal();
   };
 
-  const rates = useSelector(selectRates);
 
   useEffect(() => {
     dispatch(fetchRates());
@@ -169,13 +167,7 @@ const InvoiceForm = () => {
     setNewCurrency(newCurr);
   };
 
-  const convertCurrency = (amount, fromCurrency, toCurrency) => {
-    if (fromCurrency === toCurrency) {
-      return amount;
-    }
-    const rate = rates[toCurrency] / rates[fromCurrency];
-    return (amount * rate).toFixed(2);
-  };
+
 
   const openModal = (event) => {
     event.preventDefault();
