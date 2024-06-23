@@ -270,7 +270,7 @@ const InvoiceForm = () => {
             </div>
             <hr className="my-4" />
             <Row className="mb-5">
-              <Col>
+              <Col xs={12} md={6} className="mb-3 mb-md-0">
                 <Form.Label className="fw-bold">Bill to:</Form.Label>
                 <Form.Control
                   placeholder="Who is this invoice to?"
@@ -304,7 +304,7 @@ const InvoiceForm = () => {
                   required
                 />
               </Col>
-              <Col>
+              <Col xs={12} md={6}>
                 <Form.Label className="fw-bold">Bill from:</Form.Label>
                 <Form.Control
                   placeholder="Who is this invoice from?"

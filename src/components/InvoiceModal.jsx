@@ -44,9 +44,9 @@ const InvoiceModal = (props) => {
               <h4 className="fw-bold my-2">
                 {props.info.billFrom || "John Uberbacher"}
               </h4>
-              <h7 className="fw-bold text-secondary mb-1">
+              <h6 className="fw-bold text-secondary mb-1">
                 Invoice No.: {props.info.invoiceNumber || ""}
-              </h7>
+              </h6>
             </div>
             <div className="text-end ms-4">
               <h6 className="fw-bold mt-1 mb-2">Amount&nbsp;Due:</h6>
@@ -179,7 +179,7 @@ const InvoiceModal = (props) => {
           </Row>
         </div>
       </Modal>
-      <hr className="mt-4 mb-3" />
+    
     </div>
   );
 };

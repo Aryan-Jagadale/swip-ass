@@ -44,11 +44,15 @@ const EditableField = (props) => {
             className="me-1"
           >
             <option value="">Select an item</option>
-            {props.options.map((option, index) => (
-              <option key={index} value={option.itemName}>
-                {option.itemName}
-              </option>
-            ))}
+            {props.options.map((option, index) => {
+              if (option.itemName !== "") {
+                return (
+                  <option key={index} value={option.itemName}>
+                    {option.itemName}
+                  </option>
+                );
+              }
+            })}
           </Form.Control>
           <Form.Control
             type="text"

@@ -5,6 +5,17 @@ import Button from "react-bootstrap/Button";
 import { BiTrash } from "react-icons/bi";
 import EditableField from "./EditableField";
 
+const getUniqueItemsByName = (items) => {
+  const uniqueItemsMap = new Map();
+  items.forEach(item => {
+      if (!uniqueItemsMap.has(item.itemName)) {
+          uniqueItemsMap.set(item.itemName, item);
+      }
+  });
+  return Array.from(uniqueItemsMap.values());
+};
+
+
 const InvoiceItem = (props) => {
   const {
     onItemizedItemEdit,
@@ -83,6 +94,10 @@ const ItemRow = (props) => {
     );
   };
 
+  console.log();
+  const uniqueItems = getUniqueItemsByName(props?.allItems);
+
+
   return (
     <tr>
       <td style={{ width: "100%" }}>
@@ -97,7 +112,7 @@ const ItemRow = (props) => {
             value: props.item.itemName,
             id: props.item.itemId,
           }}
-          options={props.allItems}
+          options={uniqueItems}
         />
         <EditableField
           onItemizedItemEdit={(evt) =>
