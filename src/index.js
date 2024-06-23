@@ -6,15 +6,42 @@ import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import store from "./store";
+import { hydrate, render } from "react-dom";
 
-ReactDOM.render(
-  <BrowserRouter>
-    <Provider store={store}>
-      <React.StrictMode>
-        <App />
-      </React.StrictMode>
-    </Provider>
-  </BrowserRouter>,
-  document.getElementById("root")
-);
-reportWebVitals();
+const rootElement = document.getElementById("root");
+
+if (rootElement.hasChildNodes()) {
+  hydrate(
+    <BrowserRouter>
+      <Provider store={store}>
+        <React.StrictMode>
+          <App />
+        </React.StrictMode>
+      </Provider>
+    </BrowserRouter>,
+    rootElement
+  );
+} else {
+  render(
+    <BrowserRouter>
+      <Provider store={store}>
+        <React.StrictMode>
+          <App />
+        </React.StrictMode>
+      </Provider>
+    </BrowserRouter>,
+    rootElement
+  );
+}
+
+// ReactDOM.render(
+//   <BrowserRouter>
+//     <Provider store={store}>
+//       <React.StrictMode>
+//         <App />
+//       </React.StrictMode>
+//     </Provider>
+//   </BrowserRouter>,
+//   document.getElementById("root")
+// );
+// reportWebVitals();
