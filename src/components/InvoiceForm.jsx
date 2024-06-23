@@ -21,6 +21,9 @@ import {
   selectSelectedCurrency,
   setCurrency,
 } from "../redux/currencySlice";
+import { isInvoiceValid } from "../utils/checkIsDataThere";
+
+
 
 const InvoiceForm = () => {
   const dispatch = useDispatch();
@@ -189,8 +192,13 @@ const InvoiceForm = () => {
       dispatch(updateInvoice({ id: params.id, updatedInvoice: formData }));
       alert("Invoice updated successfuly 🥳");
     } else if (isCopy) {
-      dispatch(addInvoice({ id: generateRandomId(), ...formData }));
-      alert("Invoice added successfuly 🥳");
+      if (isInvoiceValid(formData)) {
+        dispatch(addInvoice({ id: generateRandomId(), ...formData }));
+        alert("Invoice added successfuly 🥳");
+      }else{
+        alert("All inputs are required!")
+        return;
+      }
     } else {
       dispatch(addInvoice(formData));
       alert("Invoice added successfuly 🥳");
