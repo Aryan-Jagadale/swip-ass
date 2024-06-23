@@ -6,17 +6,32 @@ import { BiTrash } from "react-icons/bi";
 import EditableField from "./EditableField";
 
 const InvoiceItem = (props) => {
-  const { onItemizedItemEdit, currency, onRowDel, items, onRowAdd } = props;
+  const {
+    onItemizedItemEdit,
+    currency,
+    onRowDel,
+    items,
+    onRowAdd,
+    convertCurrency,
+    oldCurrency,
+    newCurrency,
+  } = props;
 
-  const itemTable = items.map((item) => (
-    <ItemRow
-      key={item.id}
-      item={item}
-      onDelEvent={onRowDel}
-      onItemizedItemEdit={onItemizedItemEdit}
-      currency={currency}
-    />
-  ));
+  const itemTable = items?.map((item) => {
+    return (
+      <ItemRow
+        key={item.id}
+        item={item}
+        onDelEvent={onRowDel}
+        onItemizedItemEdit={onItemizedItemEdit}
+        currency={currency}
+        allItems={items}
+        convertCurrency={convertCurrency}
+        oldCurrency={oldCurrency}
+        newCurrency={newCurrency}
+      />
+    );
+  });
 
   return (
     <div>
@@ -29,7 +44,18 @@ const InvoiceItem = (props) => {
             <th className="text-center">ACTION</th>
           </tr>
         </thead>
-        <tbody>{itemTable}</tbody>
+        <tbody>
+          {itemTable.length > 0 ? (
+            itemTable
+          ) : (
+            <tr>
+              {" "}
+              <td colSpan={4} className="text-center">
+                <div>No item present!</div>
+              </td>
+            </tr>
+          )}
+        </tbody>
       </Table>
       <Button className="fw-bold" onClick={onRowAdd}>
         Add Item
@@ -42,6 +68,21 @@ const ItemRow = (props) => {
   const onDelEvent = () => {
     props.onDelEvent(props.item);
   };
+
+  const handlePriceChange = (event) => {
+    const convertedPrice = props.convertCurrency(
+      event.target.value,
+      props.oldCurrency,
+      props.newCurrency
+    );
+    props.onItemizedItemEdit(
+      {
+        target: { name: "itemPrice", value: convertedPrice },
+      },
+      props.item.itemId
+    );
+  };
+
   return (
     <tr>
       <td style={{ width: "100%" }}>
@@ -56,6 +97,7 @@ const ItemRow = (props) => {
             value: props.item.itemName,
             id: props.item.itemId,
           }}
+          options={props.allItems}
         />
         <EditableField
           onItemizedItemEdit={(evt) =>
@@ -87,16 +129,14 @@ const ItemRow = (props) => {
       </td>
       <td style={{ minWidth: "130px" }}>
         <EditableField
-          onItemizedItemEdit={(evt) =>
-            props.onItemizedItemEdit(evt, props.item.itemId)
-          }
+          onItemizedItemEdit={handlePriceChange}
           cellData={{
             leading: props.currency,
             type: "number",
             name: "itemPrice",
             min: 1,
             step: "0.01",
-            presicion: 2,
+            precision: 2,
             textAlign: "text-end",
             value: props.item.itemPrice,
             id: props.item.itemId,

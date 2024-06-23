@@ -7,47 +7,86 @@ import { useNavigate } from "react-router-dom";
 import { useInvoiceListData } from "../redux/hooks";
 import { useDispatch } from "react-redux";
 import { addItemToForm, deleteItem } from "../redux/invoicesSlice";
-import { GrAddCircle } from "react-icons/gr";
+import TooltipHeader from "../commonComponents/TooltipHeader";
+
 
 const ProductsTab = () => {
   const { invoiceList } = useInvoiceListData();
   const isListEmpty = invoiceList.length === 0;
   const navigate = useNavigate();
 
-  // Flatten the items from all invoices
-  const allItems = invoiceList.flatMap(invoice => 
-    invoice.items.map(item => ({
+  const allItems = invoiceList.flatMap((invoice) =>
+    invoice.items.map((item) => ({
       ...item,
       invoiceNumber: invoice.invoiceNumber,
       currency: invoice.currency,
       invoiceId: invoice.id,
     }))
   );
+  const transformItems = (items) => {
+    return items.map(item => ({
+      ...item,
+      itemName: item.itemName || '---',
+      itemDescription: item.itemDescription || '---',
+      itemPrice: item.itemPrice || '---',
+      invoiceNumber: item.invoiceNumber || '---',
+      currency: item.currency || '---'
+    }));
+  };
+  const transformedItems = transformItems(allItems);
+
 
   return (
     <Row>
-      <Col className="mx-auto" xs={12} md={8} lg={9}>
-        <Card className="d-flex p-3 p-md-4 my-3 my-md-4" style={{ width: '100%' }}>
+      <Col className="mx-auto">
+        <Card
+          className="d-flex p-3 p-md-4 my-3 my-md-4"
+          style={{ width: "100%" }}
+        >
           {isListEmpty ? (
-            <div className="d-flex flex-column align-items-center">
-              <h3 className="fw-bold pb-2 pb-md-4">No invoices present</h3>
+            <div className="d-flex flex-column align-items-center full-width">
+              <h5 className="fw-bold pb-2 pb-md-4">No invoices present</h5>
             </div>
           ) : (
             <div className="d-flex flex-column">
               <div className="d-flex flex-row align-items-center justify-content-between">
-                <h3 className="fw-bold pb-2 pb-md-4">Items List</h3>
+                <h3 className="fw-bold pb-2 pb-md-4">Products List</h3>
               </div>
               <Table responsive>
                 <thead>
                   <tr>
-                    <th>Invoice No.</th>
-                    <th>Item Name</th>
-                    <th>Item Price</th>
-                    <th>Actions</th>
+                    <TooltipHeader
+                      text="Inv."
+                      tooltipText="Invoice Number"
+                
+                    />
+                    <TooltipHeader
+                      text="Name"
+                      tooltipText="Item Name"
+                      
+                    />
+                    <TooltipHeader
+                      text="Price"
+                      tooltipText="Item Price"
+                      
+                    />
+                    <TooltipHeader
+                      text="Actions"
+                      tooltipText="Actions"
+                     
+                    />
+                     <TooltipHeader
+                      text=""
+                      tooltipText=""
+                      style={{
+                        visibility:"hidden"
+                      }}
+
+                    />
                   </tr>
                 </thead>
                 <tbody>
-                  {allItems.map((item) => (
+                  {transformedItems.map((item) => (
                     <ItemRow
                       key={item.itemId}
                       item={item}
@@ -72,11 +111,6 @@ const ItemRow = ({ item, navigate }) => {
     dispatch(deleteItem({ invoiceId: item.invoiceId, itemId: item.itemId }));
   };
 
-  const handleAddClick = () => {
-    dispatch(addItemToForm({ invoiceId: item.invoiceId, newItem: item }));
-    /* console.log({ invoiceId: item.invoiceId, newItem: item }); */
-  }
-
   const openModal = (event) => {
     event.preventDefault();
     setIsOpen(true);
@@ -88,19 +122,15 @@ const ItemRow = ({ item, navigate }) => {
 
   return (
     <tr>
-      <td>{item.invoiceNumber}</td>
+      <td style={{
+        textAlign:"center"
+      }}>{item.invoiceNumber}</td>
       <td className="fw-normal">{item.itemName}</td>
       <td className="fw-normal">
         {item.currency}
         {item.itemPrice}
       </td>
-      <td style={{ width: "5%" }}>
-        <Button variant="outline" onClick={handleAddClick}>
-          <div className="d-flex align-items-center justify-content-center gap-2">
-            <GrAddCircle />
-          </div>
-        </Button>
-      </td>
+
       <td style={{ width: "5%" }}>
         <Button variant="danger" onClick={handleDeleteClick}>
           <div className="d-flex align-items-center justify-content-center gap-2">
@@ -122,7 +152,7 @@ const ItemRow = ({ item, navigate }) => {
           isOpen,
           id: item.invoiceId,
           currency: item.currency,
-          currentDate: "", // Add other necessary fields if required
+          currentDate: "",
           invoiceNumber: item.invoiceNumber,
           dateOfIssue: "",
           billTo: "",
